@@ -133,6 +133,36 @@ argument_specs:
         default: 2112
         description: "Prometheus metrics port for kube-vip"
 
+      rke2_kubevip_arp_enable:
+        type: bool
+        default: true
+        description: "Enable ARP for kube-vip"
+
+      rke2_kubevip_cp_enable:
+        type: bool
+        default: true
+        description: "Enable kube-vip control plane load balancer"
+
+      rke2_kubevip_cp_namespace:
+        type: str
+        default: "kube-system"
+        description: "Namespace for kube-vip control plane load balancer"
+
+      rke2_kubevip_ddns_enable:
+        type: bool
+        default: false
+        description: "Enable kube-vip DDNS functionality"
+
+      rke2_kubevip_upnp_enable:
+        type: bool
+        default: false
+        description: "Enable kube-vip UPnP functionality"
+
+      rke2_kubevip_leaderelection_enable:
+        type: bool
+        default: true
+        description: "Enable kube-vip leader election"
+
       rke2_additional_sans:
         type: list
         default: []
@@ -436,14 +466,19 @@ argument_specs:
         description: "Customize default kube-scheduler arguments."
 
       rke2_ingress_controller:
-        type: str
-        default: "nginx-ingress"
-        description: "Ingress controller to use (nginx-ingress, traefik, or none)"
+        type: raw
+        default: "ingress-nginx"
+        description: "Ingress controller to use (ingress-nginx, traefik, or none) (string or array)"
 
       rke2_ingress_nginx_values:
         type: dict
         default: {}
         description: "Configure nginx via HelmChartConfig"
+
+      rke2_traefik_values:
+        type: dict
+        default: {}
+        description: "Configure traefik via HelmChartConfig"
 
       rke2_drain_node_during_upgrade:
         type: bool

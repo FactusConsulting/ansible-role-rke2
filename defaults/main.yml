@@ -82,6 +82,24 @@ rke2_kubevip_service_election_enable: true
 # Prometheus metrics port for kube-vip
 rke2_kubevip_metrics_port: 2112
 
+# Enable ARP for kube-vip load balancer
+rke2_kubevip_arp_enable: true
+
+# Enable kube-vip control plane load balancer for RKE2
+rke2_kubevip_cp_enable: true
+
+# Namespace for kube-vip control plane load balancer
+rke2_kubevip_cp_namespace: "kube-system"
+
+# Enable kube-vip DDNS for control plane load balancer
+rke2_kubevip_ddns_enable: false
+
+# Enable kube-vip UPnP for control plane load balancer
+rke2_kubevip_upnp_enable: false
+
+# Enable kube-vip leader election for control plane load balancer
+rke2_kubevip_leaderelection_enable: true
+
 # Add additional SANs in k8s API TLS cert
 rke2_additional_sans: []
 
@@ -148,6 +166,12 @@ rke2_airgap_copy_additional_tarballs: []
 # Destination for airgap additional images tarballs ( see https://docs.rke2.io/install/airgap#tarball-method )
 rke2_tarball_images_path: "{{ rke2_data_path }}/agent/images"
 
+# Enable Conditional Image Imports - create a .cache.json file in the images directory so that
+# RKE2 only reimports tarballs that have changed (by size or mtime) since the last import, even
+# across restarts. Speeds up startup at the cost of guaranteed image reimport on every boot.
+# See https://docs.rke2.io/install/airgap?airgap-load-images=Manually+Deploy+Images#enable-conditional-image-imports
+rke2_conditional_image_imports: false
+
 # Architecture to be downloaded, currently there are releases for amd64 and s390x
 rke2_architecture: amd64
 
@@ -202,7 +226,7 @@ rke2_etcd_snapshot_source_dir: etcd_snapshots
 
 # Etcd snapshot file name.
 # When the file name is defined, the etcd will be restored on initial deployment Ansible run.
-# The etcd will be restored only during the initial run, so even if you will leave the the file name specified,
+# The etcd will be restored only during the initial run, so even if you will leave the file name specified,
 # the etcd will remain untouched during the next runs.
 # You can either use this or set options in `rke2_etcd_snapshot_s3_options`
 rke2_etcd_snapshot_file: ""
@@ -296,7 +320,8 @@ rke2_agents_group_name: workers
 # rke2_kube_scheduler_arg:
 #   - "bind-address=0.0.0.0"
 
-# Configure Ingress Controller (allowed values: ingress-nginx, traefik, none)
+# Ingress controller selection - single value or list of values. Supported: ingress-nginx, traefik, none
+# NOTE: The default value will change to `traefik` in role release 1.52.0
 rke2_ingress_controller: ingress-nginx
 
 # (Optional) Configure nginx via HelmChartConfig: https://docs.rke2.io/networking/networking_services#nginx-ingress-controller
@@ -306,12 +331,21 @@ rke2_ingress_controller: ingress-nginx
 #       use-forwarded-headers: "true"
 rke2_ingress_nginx_values: {}
 
+# (Optional) Configure traefik via HelmChartConfig: https://docs.rke2.io/networking/networking_services
+# rke2_traefik_values:
+#   providers:
+#     kubernetesIngressNginx:
+#       enabled: true
+#       ingressClass: "rke2-ingress-nginx-migration"
+#       controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
+rke2_traefik_values: {}
+
 # Cordon, drain the node which is being upgraded. Uncordon the node once the RKE2 upgraded
 rke2_drain_node_during_upgrade: false
 # Additional args that will be passed to the kubectl drain command e.g. --pod-selector
 rke2_drain_additional_args: ""
 
-# Wait for all pods to be have a status of running or succeeded after rke2-service restart during rolling restart.
+# Wait for all pods to have a status of running or succeeded after rke2-service restart during rolling restart.
 rke2_wait_for_all_pods_to_be_ready: false
 # Wait for all pods to be ready after rke2-service restart during rolling restart.
 # Named "healthy" to keep backwards compatibility with existing variable names.
