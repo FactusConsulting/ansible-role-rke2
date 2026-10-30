@@ -16,63 +16,58 @@ on:
     - cron: "0 1 1 * *"
   workflow_dispatch:
 
+# NOTE: these jobs stay on GitHub-hosted runners (free for public repos). On the
+# self-hosted ARC docker runner (arc-runner-public-docker, docker-in-docker inside a
+# Kubernetes pod) RKE2 cannot start inside the privileged systemd molecule containers:
+# nested cgroup v2 makes containerd/runc fail (etcd static pod never starts) and the
+# rockylinux9 image fails sudo/PAM. See PR #1 for details.
 jobs:
   standalone:
     name: Single node setup
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: arc-runner-public-docker
+    runs-on: ubuntu-22.04
     strategy:
-      fail-fast: false
+      fail-fast: ${{ !contains(github.event_name, 'pull_request') }}
       matrix:
         config:
+          - image: "rockylinux9"
+            cgroup_mode: "host"
+            volumes: "rw"
           - image: "ubuntu2404"
             cgroup_mode: "host"
             volumes: "rw"
-            rke2: "v1.31.14+rke2r1"
-          - image: "ubuntu2404"
-            cgroup_mode: "host"
-            volumes: "rw"
-            rke2: "v1.28.15+rke2r1"
     steps:
       - name: checkout
         uses: actions/checkout@v6
         with:
           path: "lablabs.rke2"
 
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
       - name: Set up Python 3
         uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: "3.x"
 
       - name: Install test dependencies
         run: pip3 install ansible docker molecule molecule-plugins[docker] netaddr "requests<2.29.2"
 
       - name: Run Molecule tests
-        run: molecule test --destroy never
+        run: molecule test
         working-directory: ./lablabs.rke2
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
           MOLECULE_IMAGE: ${{ matrix.config.image }}
-          DBG_RKE2: ${{ matrix.config.rke2 }}
           MOLECULE_DOCKER_CGROUPS_MODE: ${{ matrix.config.cgroup_mode }}
           MOLECULE_DOCKER_VOLUMES: ${{ matrix.config.volumes }}
 
-      - name: Debug rke2 service on failure
-        if: failure()
-        run: |
-          docker ps -a
-          for n in $(docker ps -q); do
-            docker exec "$n" systemctl status rke2-server --no-pager || true
-            docker exec "$n" journalctl -u rke2-server --no-pager -n 150 || true
-            docker exec "$n" sh -c 'tail -n 60 /var/lib/rancher/rke2/agent/containerd/containerd.log /var/lib/rancher/rke2/agent/logs/kubelet.log 2>&1' || true
-          done
-          docker info | head -40
-
   cluster:
     name: Cluster setup
-    if: ${{ github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
-    runs-on: arc-runner-public-docker
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-22.04
     needs: standalone
     strategy:
       matrix:
@@ -86,10 +81,15 @@ jobs:
         with:
           path: "lablabs.rke2"
 
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
       - name: Set up Python 3
         uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: "3.x"
 
       - name: Install test dependencies
         run: pip3 install ansible docker molecule molecule-plugins[docker] netaddr "requests<2.29.2"

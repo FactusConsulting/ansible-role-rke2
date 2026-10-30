@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   vars:
-    rke2_version: "{{ lookup('env','DBG_RKE2') }}"
+    rke2_version: v1.27.1+rke2r1
     rke2_snapshotter: native
   roles:
     - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
