@@ -26,9 +26,9 @@ jobs:
       matrix:
         config:
           - image: "ubuntu2404"
-            cgroup_mode: "private"
+            cgroup_mode: "host"
             volumes: "rw"
-          - image: "rockylinux9"
+          - image: "ubuntu2404"
             cgroup_mode: "private"
             volumes: "rw"
     steps:
