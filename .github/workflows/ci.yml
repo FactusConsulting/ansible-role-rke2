@@ -46,7 +46,7 @@ jobs:
         run: pip3 install ansible docker molecule molecule-plugins[docker] netaddr "requests<2.29.2"
 
       - name: Run Molecule tests
-        run: molecule test
+        run: molecule test --destroy never
         working-directory: ./lablabs.rke2
         env:
           PY_COLORS: "1"
@@ -54,6 +54,17 @@ jobs:
           MOLECULE_IMAGE: ${{ matrix.config.image }}
           MOLECULE_DOCKER_CGROUPS_MODE: ${{ matrix.config.cgroup_mode }}
           MOLECULE_DOCKER_VOLUMES: ${{ matrix.config.volumes }}
+
+      - name: Debug rke2 service on failure
+        if: failure()
+        run: |
+          docker ps -a
+          for n in $(docker ps -q); do
+            docker exec "$n" systemctl status rke2-server --no-pager || true
+            docker exec "$n" journalctl -u rke2-server --no-pager -n 150 || true
+            docker exec "$n" sh -c 'tail -n 60 /var/lib/rancher/rke2/agent/containerd/containerd.log /var/lib/rancher/rke2/agent/logs/kubelet.log 2>&1' || true
+          done
+          docker info | head -40
 
   cluster:
     name: Cluster setup
