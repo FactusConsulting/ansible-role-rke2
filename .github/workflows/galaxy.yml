@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: arc-runner
+    runs-on: arc-runner-public
     steps:
       - name: galaxy
         uses: robertdebock/galaxy-action@1.2.1

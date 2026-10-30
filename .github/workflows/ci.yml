@@ -19,7 +19,7 @@ on:
 jobs:
   standalone:
     name: Single node setup
-    runs-on: arc-runner
+    runs-on: arc-runner-public
     strategy:
       fail-fast: ${{ !contains(github.event_name, 'pull_request') }}
       matrix:
@@ -57,7 +57,7 @@ jobs:
   cluster:
     name: Cluster setup
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-    runs-on: arc-runner
+    runs-on: arc-runner-public
     needs: standalone
     strategy:
       matrix:
@@ -94,7 +94,7 @@ jobs:
   # ha_cluster:
   #   name: HA Cluster setup
   #   if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-  #   runs-on: arc-runner
+  #   runs-on: arc-runner-public
   #   needs: cluster
   #   strategy:
   #     matrix:
@@ -132,7 +132,7 @@ jobs:
   # ha_cluster_kubevip:
   #   name: HA Cluster kube-vip setup
   #   if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-  #   runs-on: arc-runner
+  #   runs-on: arc-runner-public
   #   needs: cluster
   #   strategy:
   #     matrix:
