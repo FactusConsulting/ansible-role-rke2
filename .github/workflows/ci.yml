@@ -25,12 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - image: "rockylinux9"
-            cgroup_mode: "host"
-            volumes: "rw"
-          - image: "ubuntu2404"
-            cgroup_mode: "host"
-            volumes: "rw"
           - image: "ubuntu2404"
             cgroup_mode: "private"
             volumes: "rw"
