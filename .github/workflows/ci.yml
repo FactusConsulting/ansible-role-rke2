@@ -19,7 +19,8 @@ on:
 jobs:
   standalone:
     name: Single node setup
-    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: arc-runner-public-docker
     strategy:
       fail-fast: ${{ !contains(github.event_name, 'pull_request') }}
       matrix:
@@ -35,11 +36,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           path: "lablabs.rke2"
-
-      - name: Remove unnecessary files
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
@@ -61,8 +57,8 @@ jobs:
 
   cluster:
     name: Cluster setup
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-    runs-on: ubuntu-22.04
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: arc-runner-public-docker
     needs: standalone
     strategy:
       matrix:
@@ -75,11 +71,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           path: "lablabs.rke2"
-
-      - name: Remove unnecessary files
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
