@@ -28,9 +28,11 @@ jobs:
           - image: "ubuntu2404"
             cgroup_mode: "host"
             volumes: "rw"
+            rke2: "v1.31.14+rke2r1"
           - image: "ubuntu2404"
-            cgroup_mode: "private"
+            cgroup_mode: "host"
             volumes: "rw"
+            rke2: "v1.28.15+rke2r1"
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -52,6 +54,7 @@ jobs:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
           MOLECULE_IMAGE: ${{ matrix.config.image }}
+          DBG_RKE2: ${{ matrix.config.rke2 }}
           MOLECULE_DOCKER_CGROUPS_MODE: ${{ matrix.config.cgroup_mode }}
           MOLECULE_DOCKER_VOLUMES: ${{ matrix.config.volumes }}
 
