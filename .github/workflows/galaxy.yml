@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: arc-runner-public
+    runs-on: ubuntu-22.04
     steps:
       - name: galaxy
         uses: robertdebock/galaxy-action@1.2.1
