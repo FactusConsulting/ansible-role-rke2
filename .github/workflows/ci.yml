@@ -19,7 +19,7 @@ on:
 jobs:
   standalone:
     name: Single node setup
-    runs-on: ubuntu-22.04
+    runs-on: arc-runner
     strategy:
       fail-fast: ${{ !contains(github.event_name, 'pull_request') }}
       matrix:
@@ -35,11 +35,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           path: "lablabs.rke2"
-
-      - name: Remove unnecessary files
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
@@ -62,7 +57,7 @@ jobs:
   cluster:
     name: Cluster setup
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-    runs-on: ubuntu-22.04
+    runs-on: arc-runner
     needs: standalone
     strategy:
       matrix:
@@ -75,11 +70,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           path: "lablabs.rke2"
-
-      - name: Remove unnecessary files
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
@@ -104,7 +94,7 @@ jobs:
   # ha_cluster:
   #   name: HA Cluster setup
   #   if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-  #   runs-on: ubuntu-22.04
+  #   runs-on: arc-runner
   #   needs: cluster
   #   strategy:
   #     matrix:
@@ -142,7 +132,7 @@ jobs:
   # ha_cluster_kubevip:
   #   name: HA Cluster kube-vip setup
   #   if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
-  #   runs-on: ubuntu-22.04
+  #   runs-on: arc-runner
   #   needs: cluster
   #   strategy:
   #     matrix:
