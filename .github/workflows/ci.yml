@@ -16,6 +16,11 @@ on:
     - cron: "0 1 1 * *"
   workflow_dispatch:
 
+# NOTE: these jobs stay on GitHub-hosted runners (free for public repos). On the
+# self-hosted ARC docker runner (arc-runner-public-docker, docker-in-docker inside a
+# Kubernetes pod) RKE2 cannot start inside the privileged systemd molecule containers:
+# nested cgroup v2 makes containerd/runc fail (etcd static pod never starts) and the
+# rockylinux9 image fails sudo/PAM. See PR #1 for details.
 jobs:
   standalone:
     name: Single node setup
